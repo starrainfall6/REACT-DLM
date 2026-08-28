@@ -1,0 +1,442 @@
+/* antd 样式降权层序声明：必须在 tailwind 引入之前。
+   base(preflight) < antd < utilities，保证 antd 组件外观不被重置、
+   Tailwind 工具类又能正常覆盖 antd 组件。 */
+@layer theme, base, antd, components, utilities;
+@import 'tailwindcss';
+@import './theme.css';
+
+/* 全局基础 */
+* {
+  box-sizing: border-box;
+}
+html,
+body,
+#root {
+  height: 100%;
+}
+body {
+  margin: 0;
+  font-family: 'Manrope', 'Noto Sans SC', -apple-system, BlinkMacSystemFont, 'PingFang SC',
+    'Microsoft YaHei', sans-serif;
+  background: var(--bg);
+  /* 登录图作为全局氛围背景：照片层 + 主题色面纱，保证数据页可读性 */
+  background-image: linear-gradient(color-mix(in srgb, var(--surface) 85%, transparent), color-mix(in srgb, var(--surface) 85%, transparent)),
+    var(--bg-grad), url('/login.png');
+  background-size: auto, auto, cover;
+  background-position: center center;
+  background-attachment: fixed;
+  color: var(--text-1);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ===================================================================
+   应用布局外壳（原 apple-shell.css 的 .dlm-* 布局，迁移为类名 shell-*
+   以和可能的全局 Tailwind 类区分；这里保留与原版一致的视觉行为）
+   =================================================================== */
+.shell {
+  display: flex;
+  height: 100vh;
+  width: 100%;
+  overflow: hidden;
+}
+
+.shell-scrim {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t);
+  z-index: 25;
+}
+.shell.mobile-open .shell-scrim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 侧边栏 */
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--surface-glass);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  transition: width var(--t), transform var(--t);
+  z-index: 30;
+  overflow: hidden;
+}
+
+.sidebar-brand {
+  height: var(--topbar-h);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.brand-logo {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+  box-shadow: var(--shadow-sm);
+}
+/* 品牌词：DLM 与 DemoLineManager 统一为同款蓝→青渐变文字。
+   收起态显示缩写 DLM，展开态交叉淡入为完整 DemoLineManager（DLM 非前缀，故用切换而非拼接）。 */
+.brand-word {
+  display: inline-block;
+  font-weight: 700;
+  font-size: 13px;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #0071e3, #5ac8fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+.brand-abbr,
+.brand-full {
+  display: inline-block;
+  vertical-align: bottom;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: max-width 0.25s ease, opacity 0.2s ease;
+}
+.brand-abbr {
+  max-width: 60px;
+}
+.brand-full {
+  max-width: 160px;
+}
+html.collapsed .brand-full {
+  max-width: 0;
+  opacity: 0;
+}
+html:not(.collapsed) .brand-abbr {
+  max-width: 0;
+  opacity: 0;
+}
+
+/* 收起/展开按钮图标随状态变化 */
+.collapse-toggle .ic-expand {
+  display: none;
+}
+html.collapsed .collapse-toggle .ic-collapse {
+  display: none;
+}
+html.collapsed .collapse-toggle .ic-expand {
+  display: block;
+}
+
+/* 收起/展开按钮移到侧边栏底部：展开态占满左对齐，收起态居中 */
+.sidebar-foot {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: auto;
+  margin: 8px 14px 14px;
+  justify-content: flex-start;
+  border: none;
+  background: transparent;
+}
+html.collapsed .sidebar-foot {
+  align-self: center;
+  width: 34px;
+  margin: 8px auto 14px;
+  justify-content: center;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+.sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 3px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 10px 12px;
+  min-height: 44px;
+  box-sizing: border-box;
+  border-radius: var(--radius-sm);
+  color: var(--text-2);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  position: relative;
+  transition: background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+}
+.nav-item:hover {
+  background: var(--surface-hover);
+  color: var(--text-1);
+}
+.nav-item.active {
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+.nav-item.active::before {
+  content: '';
+  position: absolute;
+  left: -14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 22px;
+  background: var(--accent);
+  border-radius: 0 3px 3px 0;
+}
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+}
+
+/* 收起态 */
+html.collapsed .sidebar {
+  width: var(--sidebar-collapsed-w);
+}
+html.collapsed .nav-label {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+}
+html.collapsed .sidebar-brand,
+html.collapsed .nav-item {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+  gap: 0;
+}
+html.collapsed .sidebar-nav {
+  padding-left: 0;
+  padding-right: 0;
+  align-items: center;
+}
+html.collapsed .nav-item {
+  width: 44px;
+  height: 44px;
+}
+html.collapsed .nav-item.active::before {
+  display: none;
+}
+
+/* 主体 */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.topbar {
+  height: var(--topbar-h);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-glass);
+  backdrop-filter: saturate(180%) blur(24px);
+  -webkit-backdrop-filter: saturate(180%) blur(24px);
+  z-index: 20;
+}
+.topbar-title {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  justify-content: center;
+}
+.topbar-title .page {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-1);
+  margin-top: 2px;
+}
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.icon-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-sm);
+  display: grid;
+  place-items: center;
+  color: var(--text-2);
+  transition: background var(--t-fast), color var(--t-fast);
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+}
+.icon-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text-1);
+}
+.icon-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  fill: none;
+}
+
+/* 内容区 */
+.content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+}
+.content::-webkit-scrollbar {
+  width: 10px;
+}
+.content::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 5px;
+  border: 3px solid var(--bg);
+}
+
+/* 主题图标 */
+.theme-toggle .moon {
+  display: none;
+}
+html[data-theme='dark'] .theme-toggle .sun {
+  display: none;
+}
+html[data-theme='dark'] .theme-toggle .moon {
+  display: block;
+}
+
+/* 移动端 */
+.mobile-toggle {
+  display: none;
+}
+@media (max-width: 860px) {
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    transform: translateX(-100%);
+  }
+  .shell.mobile-open .sidebar {
+    transform: translateX(0);
+  }
+  .mobile-toggle {
+    display: grid;
+  }
+  .content {
+    padding: 20px 8px 32px;
+  }
+}
+
+/* 小桌面及以下（≤1279px，对齐 screen-params.md 的小桌面断点）：
+   你的实际工作视口约 1220px，上下左右间距均收紧为 8px。
+   原 860px 手机布局块（sidebar fixed 等）保留，但 .content 会被本规则统一覆盖为 8px 四边。 */
+@media (max-width: 1279px) {
+  .content {
+    padding: 8px;
+  }
+}
+@media (max-width: 560px) {
+  .topbar {
+    padding: 0 12px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* 盘点计划页布局：窄屏单列、宽屏双列，避免小屏下两列被压扁/分布不均。
+   拉伸规则仅在宽屏(≥1024)生效；窄屏去掉 flex:1 + gridTemplateRows，
+   让卡片按内容自然高度堆叠，分布均匀。 */
+.inv-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  height: 100%;
+  min-height: 0;
+}
+.inv-row {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+@media (min-width: 1024px) {
+  .inv-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .inv-row-bottom {
+    flex: 1;
+    min-height: 0;
+    grid-template-rows: minmax(0, 1fr);
+  }
+}
+
+/* 工具管理页：antd Table 的 scroll.y 实际生成的是 max-height（rc-table），
+   末页行数少时表体随即收缩、整表变矮、底部留白与满页不一致。
+   用与 scroll.y 同步的 --fit-y 给 .ant-table-body 设 min-height，
+   强制表体始终撑到 scroll.y，使任意页码下表格总高恒定、底部间距一致。 */
+.tools-fit .ant-table-body {
+  min-height: var(--fit-y, 480px);
+}
+
+/* 管理列表：表头与表体同色。
+   根因：antd 表头用 headerBg 令牌、表体（.ant-table 根）用 colorBgContainer 令牌，
+   二者默认不同色。这里把两者都强制为 --surface（浅色 #fff / 深色 #1c1c1e），
+   表头即与下方数据行完全一致；并保留表头居中（覆盖 antd 因列 align 写入的内联 text-align）。
+   固定列/吸顶表头同样处理，避免横向滚动或滚动时深浅不一。 */
+.ant-table,
+.ant-table-container,
+.ant-table-header {
+  background: var(--surface) !important;
+}
+.ant-table-thead > tr > th.ant-table-cell,
+.ant-table-thead > tr > th.ant-table-cell.ant-table-cell-fix-left,
+.ant-table-thead > tr > th.ant-table-cell.ant-table-cell-fix-right {
+  text-align: center !important;
+  background: var(--surface) !important;
+}
+
+/* 数据行（单元格内容）统一居中，覆盖各列原本的 align 设置；
+   与表头对称。操作列内含 flex 按钮组，本身已居中，不受影响。 */
+.ant-table-tbody > tr > td.ant-table-cell,
+.ant-table-tbody > tr > td.ant-table-cell.ant-table-cell-fix-left,
+.ant-table-tbody > tr > td.ant-table-cell.ant-table-cell-fix-right {
+  text-align: center !important;
+}

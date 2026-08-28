@@ -1,0 +1,29 @@
+# Node / Vite
+node_modules/
+dist/
+*.tsbuildinfo
+*.local
+
+# Python / FastAPI
+.venv/
+venv/
+__pycache__/
+*.pyc
+.env
+*.log
+
+# Scratch / temp
+_p_*.py
+.tmp_*
+_uv*.log
+/login.png
+
+# Local tool data
+.workbuddy/
+
+# Stray duplicate
+REACT/REACT/
+
+# OS
+.DS_Store
+Thumbs.db
